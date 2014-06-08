@@ -31,28 +31,45 @@ def estabecerRuta(ruta):
 def transformada():
     """
     Calcula la Transformada Discreta de Fourier de una imagen RGB o en escala de grises 
-    y retorna en forma de imagenes la parte reeal, parte imaginaria, magnitud y angulo fase
+    y retorna en forma de imagenes la parte real, parte imaginaria, magnitud y angulo fase
     """
     imagen = _abrirImagen()
     if imagen.format in _formatos:
-        if imagen.mode == 'RGB' or imagen.mode == 'RGBA':
-            datos = np.asarray(imagen)/255.0
-            transf = pFT.builders.fftn(datos, datos.shape)
-            resultado = transf()
-            ptReal = Image.fromarray(np.around(resultado.real), 'RGB')
-            ptImag = Image.fromarray(np.around(resultado.imag), 'RGB')
-            magnitud = Image.fromarray(np.around(np.absolute(resultado)), 'RGB')
-            fase = Image.fromarray(np.around(np.rad2deg(np.arctan2(resultado.imag, resultado.real))), 'RGB')
-            return ptReal, ptImag, magnitud, fase
-    
+        if imagen.mode != 'L':
+            imagen = imagen.convert('L')
+            
+        datos = imagen.getdata()
+        datos = np.array(datos)
+        datos.shape = imagen.size
+        transf = pFT.builders.fft2(datos)
+        resultado = transf()
+
+        ptReal = Image.new('L', imagen.size)
+        datosReal = np.around(resultado.real)
+        datosReal.shape = (datosReal.size)
+        ptReal.putdata(list(datosReal))  
+        
+        ptImag = Image.new('L', imagen.size)
+        datosImag = np.around(resultado.imag)
+        datosImag.shape = (datosImag.size)
+        ptImag.putdata(list(datosImag))
+        
+        magnitud = Image.new('L', imagen.size)
+        datosMag = np.around(np.absolute(resultado))
+        datosMag.shape = (datosMag.size)
+        magnitud.putdata(list(datosMag))
+        
+        fase = Image.new('L', imagen.size)
+        datosFase = np.around(np.rad2deg(np.arctan2(resultado.imag, resultado.real)))
+        datosFase.shape = (datosFase.size)
+        fase.putdata(list(datosFase))
+        
+        return ptReal, ptImag, magnitud, fase
 
 def inversa():
     imagenes = _abrirImagen()
     for imagen in imagenes:
         pass
-
-class NoImagenError(Exception):
-    pass
 
 def _print(lista):
     for fila in lista:
@@ -61,6 +78,9 @@ def _print(lista):
         print("")
 
 if __name__ == '__main__':
-    _ruta = ["D:\\Juanpa\\Ingenieria de Sistemas UD\\Semestre V\\Matematicas especiales\\transformadas+\\XD.png"]
-    print(transformada()) 
+    _ruta = ['D:\\Juanpa\\Ingenieria de Sistemas UD\\Semestre V\\Matematicas especiales\\transformadas+\\cubosPNG.png']
+    img = transformada()
+    _ruta2='D:\\Juanpa\\Ingenieria de Sistemas UD\\Semestre V\\Matematicas especiales\\transformadas+\\'
+    for i, num in zip(img, range(len(img))):
+        i.save(_ruta2 + 'cubosT' + str(num) + '.png')
     
