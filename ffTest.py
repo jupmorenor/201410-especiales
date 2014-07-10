@@ -40,7 +40,7 @@ def inversa():
     
     
 
-def transformada():
+def transformar():
     imagen = img.open(path+'gauss.png')
     if imagen.format in formatos:
         if imagen.format == 'PNG' or imagen.format == 'JPEG' \
@@ -51,10 +51,10 @@ def transformada():
             #print("data size: " + str(npArray.size)) #dato correcto
             #print("data shape: " + str(npArray.shape)) #dato correcto
             #_print(npArray)
-            transformada = pFT.builders.rfftn(npArray, npArray.shape)
-            #print("tranf size: " + str(transformada().size)) #dato correcto
-            #print("transf shape: " + str(transformada().shape)) #dato correcto
-            salida1, salida2, salida3, salida4 = listaAImg(transformada(), imagen.size)
+            transformar = pFT.builders.rfftn(npArray, npArray.shape)
+            #print("tranf size: " + str(transformar().size)) #dato correcto
+            #print("transf shape: " + str(transformar().shape)) #dato correcto
+            salida1, salida2, salida3, salida4 = listaAImg(transformar(), imagen.size)
             salida1.save('C:/Users/Juanpa y Yami/Pictures/gaussM2.png')
             salida2.save('C:/Users/Juanpa y Yami/Pictures/gaussF2.png')
             salida3.save('C:/Users/Juanpa y Yami/Pictures/gaussR2.png')
@@ -62,8 +62,8 @@ def transformada():
         elif imagen.format == 'GIF' or imagen.mode == 'P':
             matrizImagen = list(imagen.getdata())
             npArray = np.array(matrizImagen)
-            transformada = pFT.builders.rfft(npArray)
-            salida1, salida2, salida3, salida4 = separarComplejos1D(transformada())
+            transformar = pFT.builders.rfft(npArray)
+            salida1, salida2, salida3, salida4 = separarComplejos1D(transformar())
             imagenMagnitud = img.new("L", imagen.size)
             imagenFase = img.new("L", imagen.size)
             imagenReal = img.new("L", imagen.size)
