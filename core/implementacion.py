@@ -6,11 +6,14 @@ Created on 3/06/2014
 @author:
 '''
 from __future__ import print_function
+import os
 from PIL import Image
 import numpy as np
 import pyfftw as pFT
 
-_formatos = ['PNG', 'JPEG', 'GIF', 'BMP']
+_FORMATOS = ['PNG', 'JPEG', 'GIF', 'BMP']
+_FILTROS = ['Gaussian filter.png', 'High pass filter.png', 'Low pass filter.png',
+            'pyramidal filter.png', 'Sinc filter.png']
 
 def _abrirImagen(_ruta):
     
@@ -33,12 +36,12 @@ def transformar(ruta):
     y retorna en forma de imagenes la parte real, parte imaginaria, magnitud y angulo fase
     """
     imagen = _abrirImagen(ruta)
-    if imagen.format in _formatos:
+    if imagen.format in _FORMATOS:
         if imagen.mode != 'L':
             imagen = imagen.convert('L')
             
         datos = list(imagen.getdata())
-        datos = np.array(datos)/255.0# - 1.0
+        datos = np.array(datos)#/255.0# - 1.0
         datos.shape = imagen.size
         transf = pFT.builders.fft2(datos, datos.shape)
         resultado = transf()
@@ -51,7 +54,7 @@ def transformar(ruta):
         
         #angulo fase
         fase = Image.new('L', imagen.size)
-        datosFase = np.around(np.rad2deg(np.arctan2(resultado.imag, resultado.real)))
+        datosFase = np.around(np.rad2deg(np.arctan(resultado.imag, resultado.real)))
         datosFase.shape = (datosFase.size)
         fase.putdata(list(datosFase))
         
@@ -59,13 +62,38 @@ def transformar(ruta):
     else:
         return None, None
 
-def filtrar(ruta):
-    imagen = _abrirImagen(ruta)
-    if imagen.format in _formatos:
+def filtrar(rutaimg, filtro):
+    imagen = _abrirImagen(rutaimg)
+    filtro = _abrirImagen(os.path.join(os.path.dirname(os.path.dirname(__file__)),"filtros\\" + filtro + ".png"))
+    filtro = filtro.resize(imagen.size)
+    if imagen.format in _FORMATOS:
         if imagen.mode != 'L':
-            pass
-        else:
-            pass
+            imagen = imagen.convert('L')
+            filtro = filtro.convert('L')
+        
+        datos = list(imagen.getdata())
+        datos = np.array(datos)
+        datos.shape = imagen.size
+        transf = pFT.builders.fft2(datos, datos.shape)
+        resultado = transf()
+        
+        datosFiltro = list(filtro.getdata())
+        datosFiltro = np.array(datosFiltro)/255.0
+        datosFiltro.shape = filtro.size
+        
+        magnitud = np.around(np.absolute(resultado))
+        magnitud -= np.min(magnitud)
+        magnitud *= datosFiltro
+        
+        fase = np.around(np.rad2deg(np.arctan2(resultado.imag, resultado.real)))
+        resultado = magnitud*(np.cos(np.deg2rad(fase)) + np.sin(np.deg2rad(fase))*1j)
+        inv = pFT.builders.ifft2(resultado, resultado.shape)
+        inversa = inv()#/inv.N
+        _print(inversa)
+        inversa.shape = inversa.size
+        imagen2 = Image.new("L", imagen.size)
+        imagen2.putdata(list(inversa.real))
+        return imagen2
     else:
         return None
 
@@ -76,9 +104,12 @@ def _print(lista):
         print("")
 
 if __name__ == '__main__':
+    
+    filtrar("D:\\Juanpa\\Ingenieria de Sistemas UD\\Semestre V\\Matematicas especiales\\transformadas+\\XD.png", "High pass filter")
+    """
     _ruta = ['D:\\Juanpa\\Ingenieria de Sistemas UD\\Semestre V\\Matematicas especiales\\transformadas+\\escalon.png']
     img = transformar()
     _ruta2='D:\\Juanpa\\Ingenieria de Sistemas UD\\Semestre V\\Matematicas especiales\\transformadas+\\'
     for i, num in zip(img, range(len(img))):
         i.save(_ruta2 + 'escalon_' + str(num) + '.png')
-    
+    """

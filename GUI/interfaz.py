@@ -65,16 +65,20 @@ class VentanaFiltrar(QDialog):
         self.inicializar()
     
     def inicializar(self):
+        self.titulo = QLabel("SELECCIONE EL FILTRO A APLICAR", self)
+        self.titulo.move(50,50)
+        self.titulo.adjustSize()
+        
         self.filtros = QComboBox(self)
         self.filtros.move(100,100)
         self.filtros.sizeAdjustPolicy()
-        self.filtros.addItem("Low pass Filter")
+        self.filtros.addItem("Low pass filter")
         self.filtros.addItem("High pass filter")
         self.filtros.addItem("Gaussian filter")
         self.filtros.addItem("Pyramidal filter")
         self.filtros.addItem("Sinc filter")
         
-        self.seleccionar = QPushButton("seleccionar", self)
+        self.seleccionar = QPushButton("Seleccionar imagen", self)
         self.seleccionar.move(100,200)
         self.seleccionar.clicked.connect(self.filtrar)
         self.setWindowTitle("Filtrar una imagen")
@@ -87,7 +91,14 @@ class VentanaFiltrar(QDialog):
         archivo = QFileDialog(self)
         ruta = archivo.getOpenFileName(self, 'Seleccionar imagen', '', "Images (*.png *.gif *.jpg *.bmp)")
         if not ruta.isEmpty():
-            pass #TODO FFTW
+            try:
+                import core
+                img = core.filtrar(str(ruta), str(self.filtros.currentText()))
+                ruta1 = archivo.getSaveFileName(self, "Guardar imagen", '', "Images (*.png *.gif *.jpg *.bmp)")
+                img.save(str(ruta1) + ".png")
+            except ImportError:
+                resp = QMessageBox.information(self, 'Error', 'Hubo un error inesperado', 
+                                        QMessageBox.Ok, QMessageBox.NoButton)
         else:
             resp = QMessageBox.information(self, 'Error', 'No ha elegido imagenes', 
                                         QMessageBox.Ok, QMessageBox.NoButton)
