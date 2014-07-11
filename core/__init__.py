@@ -1,4 +1,1 @@
-from implementacion import *
-del Image
-del np
-del pFT
+from implementacion import transformar, filtrar, invertir, NoCorrespondenError

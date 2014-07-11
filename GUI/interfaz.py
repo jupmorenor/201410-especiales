@@ -5,8 +5,7 @@ Created on 3/06/2014
 @author:
 @author:
 '''
-import sys
-from PyQt4.QtGui import QApplication, QMainWindow, QDialog, QFileDialog, QSizePolicy
+from PyQt4.QtGui import QMainWindow, QDialog, QFileDialog, QSizePolicy
 from PyQt4.QtGui import QComboBox, QPushButton, QMessageBox, QLabel
 
 class VentanaMenu(QMainWindow):
@@ -43,8 +42,8 @@ class VentanaMenu(QMainWindow):
         ruta = archivo.getOpenFileName(self, 'Seleccionar imagen', '', "Images (*.png *.gif *.jpg *.bmp)")
         if not ruta.isEmpty():
             try:
-                import core
-                img1, img2 = core.transformar(str(ruta))
+                from core import transformar
+                img1, img2 = transformar(str(ruta))
                 ruta1 = archivo.getSaveFileName(self, "Guardar Magnitud", '', "Images (*.png *.gif *.jpg *.bmp)")
                 img1.save(str(ruta1) + ".png")
                 ruta2 = archivo.getSaveFileName(self, "Guardar Fase", '', "Images (*.png *.gif *.jpg *.bmp)")
@@ -92,8 +91,8 @@ class VentanaFiltrar(QDialog):
         ruta = archivo.getOpenFileName(self, 'Seleccionar imagen', '', "Images (*.png *.gif *.jpg *.bmp)")
         if not ruta.isEmpty():
             try:
-                import core
-                img = core.filtrar(str(ruta), str(self.filtros.currentText()))
+                from core import filtrar
+                img = filtrar(str(ruta), str(self.filtros.currentText()))
                 ruta1 = archivo.getSaveFileName(self, "Guardar imagen", '', "Images (*.png *.gif *.jpg *.bmp)")
                 img.save(str(ruta1) + ".png")
             except ImportError:
@@ -109,14 +108,18 @@ class VentanaInvertir(QDialog):
         self.inicializar()
         
     def inicializar(self):
-        self.magnitud = QPushButton("magnitud", self)
-        self.magnitud.move(100,100)
-        self.magnitud.clicked.connect(self.seleccionar)
+        self.titulo = QLabel("SELECCIONE LAS IMAGENES DE MAGNITUD Y FASE", self)
+        self.titulo.move(50,50)
+        self.titulo.adjustSize()
         
+        self.magnitud = QPushButton("magnitud", self)
+        self.magnitud.move(100,200)
+        self.magnitud.clicked.connect(self.seleccionar)
+        """
         self.fase = QPushButton("fase", self)
         self.fase.move(100,150)
         self.fase.clicked.connect(self.seleccionar)
-        
+        """
         self.setWindowTitle("Transformada Inversa")
         self.resize(300,300)
         self.setWindowModality(1)
@@ -125,18 +128,17 @@ class VentanaInvertir(QDialog):
         
     def seleccionar(self):
         archivo = QFileDialog(self)
-        ruta = archivo.getOpenFileName(self, 'Seleccionar imagen', '', "Images (*.png *.gif *.jpg *.bmp)")
-        if not ruta.isEmpty():
-            return str(ruta)
+        ruta1 = archivo.getOpenFileName(self, 'Seleccionar magnitud', '', "Images (*.png *.gif *.jpg *.bmp)")
+        ruta2 = archivo.getOpenFileName(self, 'Seleccionar fase', '', "Images (*.png *.gif *.jpg *.bmp)")
+        if not ruta1.isEmpty() and not ruta2.isEmpty():
+            from core import invertir, NoCorrespondenError
+            try:
+                img = invertir((str(ruta1), str(ruta2)))
+                ruta3 = archivo.getSaveFileName(self, 'Guardar imagen', '', "Images (*.png *.gif *.jpg *.bmp)")
+                img.save(str(ruta3) + ".png")
+            except NoCorrespondenError:
+                resp = QMessageBox.information(self, 'Error', 'Las imagenes no corresponden', 
+                                        QMessageBox.Ok, QMessageBox.NoButton)    
         else:
             resp = QMessageBox.information(self, 'Error', 'No ha elegido imagenes', 
                                         QMessageBox.Ok, QMessageBox.NoButton)
-
-
-def main():
-    app = QApplication(sys.argv)
-    ventana = VentanaMenu()
-    sys.exit(app.exec_())
-
-if __name__ == '__main__':
-    main()
