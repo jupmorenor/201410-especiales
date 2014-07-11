@@ -38,7 +38,7 @@ def transformar(ruta):
         if imagen.mode != 'L':
             imagen = imagen.convert('L')
             
-        datos = np.array(imagen.getdata())/255.0# - 1.0
+        datos = np.array(list(imagen.getdata()))/255.0# - 1.0
         datos.shape = imagen.size
         transf = pFT.builders.fft2(datos, datos.shape)
         resultado = transf()
@@ -71,16 +71,16 @@ def filtrar(rutaimg, filtro):
     filtro = _abrirImagen(os.path.join(os.path.dirname(os.path.dirname(__file__)),"filtros\\" + filtro + ".png"))
     filtro = filtro.resize(imagen.size)
     if imagen.format in _FORMATOS:
-        if imagen.mode != 'L':
+        if imagen.mode != 'L' or filtro.mode!='L':
             imagen = imagen.convert('L')
             filtro = filtro.convert('L')
         
-        datos = np.array(imagen.getdata())
+        datos = np.array(list(imagen.getdata()))
         datos.shape = imagen.size
         transf = pFT.builders.fft2(datos, datos.shape)
         resultado = transf()
         
-        datosFiltro = np.array(filtro.getdata())/255.0
+        datosFiltro = np.array(list(filtro.getdata()))/255.0
         datosFiltro.shape = filtro.size
         
         magnitud = np.around(np.absolute(resultado))
@@ -110,7 +110,7 @@ def invertir(rutas):
     imagenes = _abrirImagen(rutas)
     datos = []
     for imagen in imagenes:
-        lista = np.array(imagen.getdata())
+        lista = np.array(list(imagen.getdata()))
         lista.shape = imagen.size
         datos.append(lista)
     
@@ -120,7 +120,6 @@ def invertir(rutas):
     datos = magnitud*(np.cos(np.deg2rad(fase)) + np.sin(np.deg2rad(fase))*1j)
     inv = pFT.builders.ifft2(datos, datos.shape)
     inversa = inv()
-    _print(inversa)
     inversa.shape = inversa.size
     imagen2 = Image.new("L", imagen.size)
     imagen2.putdata(list(np.absolute(inversa)*255))
