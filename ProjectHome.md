@@ -1,0 +1,1 @@
+Implementacion de la transformada rapida de fourier en imagenes PNG, JPG, BMP y GIF usando pyFFTW, numpy y PIL
